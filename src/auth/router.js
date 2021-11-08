@@ -1,38 +1,41 @@
 'use strict';
 const express = require('express');
-const router = express.Router();
+const Router = express.Router();
 const bcrypt = require('bcrypt');
+const base64 = require('base-64');
 
-const {userCollection} = require('../server')
+const { Users } = require('./models/index');
 
 
 
-router.post('/signup', async (req, res) => {
+Router.post('/signup', async (req, res) => {
     try {
         req.body.password = await bcrypt.hash(req.body.password, 5);
         console.log('====================================');
         console.log(req.body);
         console.log('====================================');
-        const record = await userCollection.create(req.body);
-        console.log( req.body);
+        const record = await Users.create(req.body);
         res.status(201).json(record);
 
     } catch (e) { res.status(403).send("Error Creating User"); }
 });
 
 
-router.post('/signin', async (req, res) => {
+Router.post('/signin', async (req, res) => {
     try {
-        const user = await userCollection.findOne({ where: { username: username } });
+        const encodedHeaders = req.headers.authorization.split(' ')[1];
+        const [username, password] = base64.decode(encodedHeaders).split(':');
+        const user = await Users.findOne({ where: { username } });
         const valid = await bcrypt.compare(password, user.password);
         if (valid) {
             res.status(200).json(user);
+        } else {
+            res.status(500).json({ 'error': 'username or password incorrect!' })
         }
-        else {
-            throw new Error('Invalid User')
-        }
-    } catch (error) { res.status(403).send("Invalid Login"); }
-
+    } catch (error) {
+        res.status(403).send("An Error Occurred!");
+    }
 });
 
-module.exports=router;
+
+module.exports = Router;
