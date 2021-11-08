@@ -23,4 +23,6 @@ const Users = require('./users-model')
 module.exports = {
     db: sequelize,
     Users: Users(sequelize, DataTypes),
+    sequelize,
+     DataTypes
 }
