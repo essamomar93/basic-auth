@@ -1,9 +1,8 @@
 'use strict';
 
-const { server } = require('../src/server'); // destructing assignment 
+const { server } = require('../src/server'); 
 const supertest = require('supertest');
 const { sequelize } = require('../src/auth/models/index');
-const base64 = require('base-64')
 const mockRequest = supertest(server);
 
 
@@ -23,6 +22,7 @@ describe('auth test', () => {
         });
         expect(respons.status).toBe(201)
     });
+
     it('signin to login as a user (use basic auth)', async () => {
         const response = await mockRequest.post('/signin').auth("essam", "1234");
         expect(response.status).toEqual(200);
@@ -35,8 +35,12 @@ describe('auth test', () => {
         const respons = await mockRequest.post('/signin').send({
             username: "admin",
             password: "admin"
-        }).auth(user.body.username,'admin')
+        }).auth(user.body.username, 'admin')
         expect(respons.status).toBe(200)
 
+    });
+    it('Does the middleware function (send it a basic header)  ', async () => {
+        const user = await mockRequest.post('/signin').auth('essa', '123');
+        expect(user.status).toBe(403);
     });
 });
